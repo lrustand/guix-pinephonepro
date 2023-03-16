@@ -1,6 +1,9 @@
 (define-module (config)
   #:use-module (gnu packages certs)
+  #:use-module (gnu packages linux)
   #:use-module (guix packages)
+  #:use-module (guix download)
+  #:use-module (guix gexp)
   #:use-module (guix git-download)
   #:use-module (guix build-system copy)
   #:use-module (nonguix licenses))
@@ -45,5 +48,38 @@
         (string-append "https://git.kernel.org/pub/scm/linux/kernel/git/"
                        "firmware/linux-firmware.git/plain/WHENCE"))))))
 
+(define (linux-pinephone-urls version)
+  "Return a list of URLS for Linux VERSION."
+  (list
+   (string-append
+    "https://github.com/megous/linux/archive/refs/tags/" version ".tar.gz")))
 
-(define-public pinephone-kernel pinephone-pro-firmware)
+(define* (linux-pinephone-pro
+          version
+          hash
+          #:key
+          (name "linux-pinephone-pro")
+          (linux linux-libre-arm64-generic))
+  (package
+    (inherit
+     (customize-linux
+      #:name name
+      #:linux linux
+      #:defconfig
+      ;; "pinephone_pro_defconfig"
+      ;; TODO: Rewrite it to the simple patch for the source code
+      (local-file "./src/pinephone_pro_defconfig")
+      #:extra-version "arm64-pinephone-pro"
+      #:source (origin (method url-fetch)
+                       (uri (linux-pinephone-urls version))
+                       (sha256 (base32 hash)))))
+    (version version)
+    (home-page "https://www.kernel.org/")
+    (synopsis "Linux kernel with nonfree binary blobs included")
+    (description
+     "The unmodified Linux kernel, including nonfree blobs, for running Guix
+System on hardware which requires nonfree software to function.")))
+
+(define-public pinephone-pro-kernel
+  (linux-pinephone-pro "orange-pi-6.3-20230313-0715"
+                       "1hildn23b83r2r47jxp3xgy797q70sqabmliil7scrv91ay3hcr2"))

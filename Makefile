@@ -7,8 +7,9 @@ GUIX_PROFILE=target/profiles/guix
 GUIX=./pre-inst-env ${GUIX_PROFILE}/bin/guix
 
 
-pinephone-kernel: guix
-	${GUIX} build -e '(@ (config) pinephone-kernel)'
+pinephone-pro-kernel: guix
+	${GUIX} build -e '(@ (config) pinephone-pro-kernel)' \
+	--target="aarch64-linux-gnu"
 
 repl: guix
 	${GUIX} repl --listen=tcp:37146
