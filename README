@@ -1,0 +1,13 @@
+# -*- mode: org; -*-
+
+* Install tow-boot
+
+The bootloader, required for easy boot from SD card.  Install it to SPI.
+https://tow-boot.org/devices/pine64-pinephonePro.html
+
+The image is here:
+https://github.com/Tow-Boot/Tow-Boot/releases/download/release-2021.10-005/pine64-pinephonePro-2021.10-005.tar.xz
+
+#+begin_src sh
+dd if=shared.disk-image.img of=/dev/XXX bs=1M oflag=direct,sync status=progress
+#+end_src
