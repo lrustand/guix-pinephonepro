@@ -1,13 +1,53 @@
 # -*- mode: org; -*-
 
-* Install tow-boot
+* Introduction
+This repository contains information on how to build a minimal Guix System for
+PinePhone Pro with custom linux kernel, which support wifi and other devices.
 
-The bootloader, required for easy boot from SD card.  Install it to SPI.
+* Install tow-boot
+The bootloader, required for exposing eMMC (primary memory) as a USB storage, so
+OS image can be flashed on it directly via cable, it allows to escape hassle
+with SD card.  Install it to SPI.
 https://tow-boot.org/devices/pine64-pinephonePro.html
 
 The image is here:
 https://github.com/Tow-Boot/Tow-Boot/releases/download/release-2021.10-005/pine64-pinephonePro-2021.10-005.tar.xz
 
+Flash it to SD card and follow instruction from tow-boot link pine64 link above.
 #+begin_src sh
 dd if=shared.disk-image.img of=/dev/XXX bs=1M oflag=direct,sync status=progress
 #+end_src
+
+After tow-boot installed you can hold volume up button during the boot, after a
+few seconds the phone will vibrate and the led will turn blue, after that, if
+usb cable attached to the phone and your machine you will see a new storage
+device (use dmesg on your machine to see the device name).
+
+After that you can directly flash OS image to it with:
+#+begin_src sh
+dd if=YOUR-OS-IMAGE of=/dev/XXX bs=1M oflag=direct,sync status=progress
+#+end_src
+
+* Building an OS image
+Make sure you have ~guix~ installed.
+
+#+begin_src sh
+make pinephone-pro-image
+#+end_src
+
+The last line of the output will contain the path to the image.
+
+To flash image to pinephone read the previous section.  Also there is a helper
+target you can use for building and flashing the image in on command:
+
+#+begin_src sh
+make write-image PINEPHONE_STORAGE=/dev/XXX
+#+end_src
+
+* Serial port
+To see logs during the boot process turn off 6th switch (headphones) near sd
+card slot. Use emacs' ~serial-term~, with /dev/ttyUSB0 and 115200 speed. You need
+an apropriate cable, like this [[https://pine64.com/product/pinebook-pinephone-pinetab-serial-console/][one]].
+
+* Contributing
+Don't hesitate to send your suggestions or patches via email or any other way.
