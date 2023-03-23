@@ -4,11 +4,12 @@
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix gexp)
+  #:use-module (guix utils)
   #:use-module (guix git-download)
   #:use-module (guix build-system copy)
   #:use-module (nonguix licenses))
 
-(define pinephone-pro-firmware
+(define-public pinephone-pro-firmware
   (let ((commit "5c4c2b89f30a42f5ffabb5b5bcbc799d8ac9f66f")
         (revision "1"))
     (package
@@ -60,25 +61,39 @@
           #:key
           (name "linux-pinephone-pro")
           (linux linux-libre-arm64-generic))
-  (package
-    (inherit
-     (customize-linux
-      #:name name
-      #:linux linux
-      #:defconfig
-      ;; "pinephone_pro_defconfig"
-      ;; TODO: Rewrite it to the simple patch for the source code
-      (local-file "./src/pinephone_pro_defconfig")
-      #:extra-version "arm64-pinephone-pro"
-      #:source (origin (method url-fetch)
-                       (uri (linux-pinephone-urls version))
-                       (sha256 (base32 hash)))))
-    (version version)
-    (home-page "https://www.kernel.org/")
-    (synopsis "Linux kernel with nonfree binary blobs included")
-    (description
-     "The unmodified Linux kernel, including nonfree blobs, for running Guix
-System on hardware which requires nonfree software to function.")))
+  (let ((linux-package
+         (customize-linux
+          #:name name
+          #:linux linux
+          #:defconfig
+          ;; It could be "pinephone_pro_defconfig", but with a small patch
+          ;; TODO: Rewrite it to the simple patch for the source code
+          (local-file "./pinephone_pro_defconfig")
+          #:extra-version "arm64-pinephone-pro"
+          #:source (origin (method url-fetch)
+                           (uri (linux-pinephone-urls version))
+                           (sha256 (base32 hash))))))
+    (package
+     (inherit linux-package)
+     (version version)
+     (inputs (list pinephone-pro-firmware))
+     (arguments
+      (substitute-keyword-arguments (package-arguments linux-package)
+        ((#:phases phases '%standard-phases)
+         #~(modify-phases
+            #$phases
+            (add-after 'configure 'set-firmware-path
+               (lambda _
+                 (copy-recursively
+                  (assoc-ref %build-inputs "pinephone-pro-firmware") "ppp")
+                 (format #t "====>")
+                 (system "cat .config")
+                 (format #t "====>")))))))
+     (home-page "https://www.kernel.org/")
+     (synopsis "Linux kernel with nonfree binary blobs included")
+     (description
+      "The unmodified Linux kernel, including nonfree blobs, for running Guix
+System on hardware which requires nonfree software to function."))))
 
 (define-public pinephone-pro-kernel
   (linux-pinephone-pro "orange-pi-6.3-20230313-0715"
