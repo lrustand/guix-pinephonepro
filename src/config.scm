@@ -98,3 +98,97 @@ System on hardware which requires nonfree software to function."))))
 (define-public pinephone-pro-kernel
   (linux-pinephone-pro "orange-pi-6.3-20230313-0715"
                        "1hildn23b83r2r47jxp3xgy797q70sqabmliil7scrv91ay3hcr2"))
+
+(use-modules (gnu system)
+             (gnu system keyboard)
+             (gnu system file-systems)
+             (gnu system shadow)
+             (gnu bootloader)
+             (gnu bootloader u-boot)
+             (gnu services)
+             (gnu services base)
+             (gnu services dbus)
+             (gnu services ssh)
+             (ice-9 match)
+             (srfi srfi-1)
+             (gnu packages base)
+             (gnu packages bash)
+             (gnu packages fonts))
+
+(use-modules (gnu services networking)
+             (rde system services networking)
+             (gnu packages gnome))
+
+(define %my-services
+  (append
+   %base-services
+   (list
+    (service iwd-service-type
+             (iwd-configuration
+              (main-conf
+               `((Settings ((AutoConnect . #t)))))))
+    (service openssh-service-type
+             (openssh-configuration
+              (x11-forwarding? #f)
+              (permit-root-login #f)
+              (allow-empty-passwords? #f)
+              (password-authentication? #f)
+              (public-key-authentication? #t)
+              (allow-agent-forwarding? #t)
+              (allow-tcp-forwarding? #t)
+              (gateway-ports? #f)
+              (challenge-response-authentication? #f)
+              (use-pam? #t)
+              (authorized-keys
+               `(("bob" ,(local-file "../files/ssh.key"))))
+              (print-last-log? #t))))))
+
+(define pinephone-pro-os
+  (operating-system
+    (kernel pinephone-pro-kernel)
+    (kernel-arguments
+     (append
+      (list
+       "console=ttyS2,115200"
+       "earlycon=uart8250,mmio32,0xff1a0000"
+       "earlyprintk")
+      (drop-right %default-kernel-arguments 1)))
+
+    (initrd-modules '())
+
+    (firmware (append
+               (list pinephone-pro-firmware)
+               %base-firmware))
+    (host-name "pinephonepro")
+    (timezone "Europe/Istanbul")
+    (locale "en_US.utf8")
+    (keyboard-layout (keyboard-layout "us" "dvorak"))
+
+    (bootloader
+     (bootloader-configuration
+      (bootloader u-boot-rockpro64-rk3399-bootloader)
+      (targets '("/dev/mmcblk0p1"))))
+
+    (file-systems
+     (cons
+      (file-system
+        (device "/dev/mmcblk0p2")
+        (mount-point "/")
+        (type "ext4"))
+      %base-file-systems))
+
+    (users (cons (user-account
+                  (name "bob")
+                  (password (crypt "3412" "$6$abc"))
+                  (group "users")
+                  (supplementary-groups '("wheel" "audio" "video"))
+                  (home-directory "/home/bob"))
+                 %base-user-accounts))
+
+    (packages
+     (append (list nss-certs)
+      %base-packages))
+
+    (services %my-services)))
+
+pinephone-pro-os
