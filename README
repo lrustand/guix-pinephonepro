@@ -29,7 +29,8 @@ dd if=YOUR-OS-IMAGE of=/dev/XXX bs=1M oflag=direct,sync status=progress
 #+end_src
 
 * Building an OS image
-Make sure you have ~guix~ installed.
+Make sure you have ~guix~ installed.  You can want to update
+~files/ssh.key~ to your public ssh key before going further.
 
 #+begin_src sh
 make pinephone-pro-image
