@@ -5,6 +5,8 @@ include profiles.mk
 # Also defined in .envrc to make proper guix version available project-wide
 GUIX_PROFILE=target/profiles/guix
 GUIX=./pre-inst-env ${GUIX_PROFILE}/bin/guix
+PULL_EXTRA_OPTIONS=
+# --allow-downgrades
 PINEPHONE_STORAGE=/dev/XXX
 
 pinephone-pro-firmware: guix
