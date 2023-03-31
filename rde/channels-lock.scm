@@ -24,10 +24,10 @@
           "2841 9AC6 5038 7440 C7E9  2FFA 2208 D209 58C1 DEB0"))))
       (channel
         (name 'guix)
-        (url "file:///home/bob/work/gnu/guix")
+        (url "https://git.savannah.gnu.org/git/guix.git")
         (branch "master")
         (commit
-         "fbf88d7bf5")
+         "a368e3cf6b38022aaedb21760c1c65e92b1fd227")
         (introduction
           (make-channel-introduction
             "9edb3f66fd807b096b48283debdcddccfea34bad"
