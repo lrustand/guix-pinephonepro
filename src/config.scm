@@ -70,9 +70,15 @@
           ;; TODO: Rewrite it to the simple patch for the source code
           (local-file "./pinephone_pro_defconfig")
           #:extra-version "arm64-pinephone-pro"
-          #:source (origin (method url-fetch)
-                           (uri (linux-pinephone-urls version))
-                           (sha256 (base32 hash))))))
+          #:source
+              (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/lrustand/linux-pinephone")
+                      (commit version)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32 hash))))))
     (package
      (inherit linux-package)
      (version version)
@@ -97,7 +103,7 @@ System on hardware which requires nonfree software to function."))))
 
 (define-public pinephone-pro-kernel
   (linux-pinephone-pro "orange-pi-6.3-20230313-0715"
-                       "1hildn23b83r2r47jxp3xgy797q70sqabmliil7scrv91ay3hcr2"))
+                       "1b0yncgbnxq0nm6c19695abm7qrzm8wm8vs0vw04gq0nxlnq4lga"))
 
 (use-modules (gnu system)
              (gnu system keyboard)
